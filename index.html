@@ -3,9 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
   <title>Royal Win Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <style>
-    * { box-sizing: border-box; }
+    * {
+      box-sizing: border-box;
+    }
+
     body {
       margin: 0;
       min-height: 100vh;
@@ -15,43 +22,64 @@
       font-family: Arial, sans-serif;
       background: #f3f4f6;
     }
+
     .login {
       width: 90%;
       max-width: 400px;
-      background: white;
       padding: 30px;
+      background: white;
       border-radius: 16px;
       box-shadow: 0 8px 30px rgba(0,0,0,.12);
     }
-    h1 { text-align: center; margin-bottom: 25px; }
-    input, button {
+
+    h1 {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    input,
+    button {
       width: 100%;
       padding: 14px;
       margin-top: 12px;
       border-radius: 8px;
       font-size: 16px;
     }
-    input { border: 1px solid #ddd; }
+
+    input {
+      border: 1px solid #ddd;
+    }
+
     button {
       border: 0;
       background: #111827;
       color: white;
       cursor: pointer;
     }
+
     #message {
       text-align: center;
       margin-top: 15px;
-      font-size: 14px;
     }
   </style>
 </head>
 
 <body>
+
   <div class="login">
     <h1>Royal Win Admin</h1>
 
-    <input id="email" type="email" placeholder="Admin Email">
-    <input id="password" type="password" placeholder="Password">
+    <input
+      id="email"
+      type="email"
+      placeholder="Admin Email"
+    >
+
+    <input
+      id="password"
+      type="password"
+      placeholder="Password"
+    >
 
     <button onclick="login()">Login</button>
 
@@ -59,18 +87,64 @@
   </div>
 
   <script>
+    const SUPABASE_URL = "mlntauvkzwwdfzopiokg";
+    const SUPABASE_KEY = "sb_publishable_DyjDq2_UPlcKBV8_yCWT1Q_og7vhKD_";
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
     async function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
-      const message = document.getElementById("message");
+      const email =
+        document.getElementById("email").value.trim();
+
+      const password =
+        document.getElementById("password").value;
+
+      const message =
+        document.getElementById("message");
 
       if (!email || !password) {
-        message.textContent = "Enter email and password.";
+        message.textContent =
+          "Please enter email and password.";
         return;
       }
 
-      message.textContent = "Login system will be connected in the next step.";
+      message.textContent = "Logging in...";
+
+      const { data, error } =
+        await supabaseClient.auth.signInWithPassword({
+          email: email,
+          password: password
+        });
+
+      if (error) {
+        message.textContent = error.message;
+        return;
+      }
+
+      const { data: admin, error: adminError } =
+        await supabaseClient
+          .from("admins")
+          .select("role")
+          .eq("user_id", data.user.id)
+          .single();
+
+      if (adminError || !admin) {
+        await supabaseClient.auth.signOut();
+        message.textContent =
+          "Access denied: Admin account required.";
+        return;
+      }
+
+      message.textContent =
+        "Login successful!";
+
+      // Dashboard આગળના stepમાં બનાવશું.
     }
   </script>
+
 </body>
 </html>
