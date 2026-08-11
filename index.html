@@ -1416,10 +1416,488 @@ async function loadDashboard(){
 
       /* SHOW DASHBOARD */
       document.getElementById("dashboardPage").style.display =
-        "block";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Royal Win Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      color: #111827;
+    }
+
+    /* LOGIN */
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 390px;
+      background: white;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(0,0,0,.10);
+    }
+
+    .login-card h1 {
+      text-align: center;
+      margin: 0 0 8px;
+    }
+
+    .login-card p {
+      text-align: center;
+      color: #6b7280;
+      margin-bottom: 25px;
+    }
+
+    input {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .login-btn {
+      width: 100%;
+      padding: 14px;
+      margin-top: 15px;
+      border: 0;
+      border-radius: 9px;
+      background: #111827;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    #loginMessage {
+      text-align: center;
+      margin-top: 14px;
+      color: #dc2626;
+    }
+
+    /* APP */
+    #app {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      background: #111827;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar h2 {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .logout-btn {
+      border: 0;
+      border-radius: 8px;
+      padding: 10px 16px;
+      background: #ef4444;
+      color: white;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: auto;
+      padding: 22px;
+    }
+
+    .welcome {
+      margin-bottom: 20px;
+    }
+
+    .welcome h1 {
+      margin: 0;
+      font-size: 26px;
+    }
+
+    .welcome p {
+      color: #6b7280;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat {
+      background: white;
+      border-radius: 15px;
+      padding: 22px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.06);
+    }
+
+    .stat-title {
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .stat-value {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .online {
+      color: #16a34a;
+    }
+
+    .panel {
+      background: white;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 18px rgba(0,0,0,.06);
+    }
+
+    .panel h2 {
+      margin-top: 0;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      min-width: 600px;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 13px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f9fafb;
+    }
+
+    .refresh-btn {
+      padding: 10px 15px;
+      border: 0;
+      border-radius: 8px;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 800px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .topbar h2 {
+        font-size: 18px;
+      }
+
+      .container {
+        padding: 15px;
+      }
+
+      .stats {
+        gap: 12px;
+      }
+
+      .stat {
+        padding: 18px;
+      }
+
+      .stat-value {
+        font-size: 25px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+  <section id="loginScreen">
+
+    <div class="login-card">
+
+      <h1>Royal Win Admin</h1>
+
+      <p>Administrator Login</p>
+
+      <input
+        id="email"
+        type="email"
+        placeholder="Admin Email"
+        autocomplete="email"
+      >
+
+      <input
+        id="password"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+
+      <button
+        class="login-btn"
+        onclick="login()">
+        Login
+      </button>
+
+      <div id="loginMessage"></div>
+
+    </div>
+
+  </section>
 
 
-      loadDashboard();
+  <!-- ADMIN APP -->
+  <section id="app">
+
+    <div class="topbar">
+
+      <h2>Royal Win Admin</h2>
+
+      <button
+        class="logout-btn"
+        onclick="logout()">
+        Logout
+      </button>
+
+    </div>
+
+
+    <main class="container">
+
+      <div class="welcome">
+        <h1>Dashboard</h1>
+        <p>Admin overview</p>
+      </div>
+
+
+      <!-- STATS -->
+      <div class="stats">
+
+        <div class="stat">
+          <div class="stat-title">Users</div>
+          <div
+            class="stat-value"
+            id="usersCount">
+            0
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-title">Wallets</div>
+          <div
+            class="stat-value"
+            id="walletsCount">
+            0
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-title">Transactions</div>
+          <div
+            class="stat-value"
+            id="transactionsCount">
+            0
+          </div>
+        </div>
+
+        <div class="stat">
+          <div class="stat-title">Status</div>
+          <div
+            class="stat-value online">
+            Online
+          </div>
+        </div>
+
+      </div>
+
+
+      <!-- USERS -->
+      <div class="panel">
+
+        <h2>Users</h2>
+
+        <button
+          class="refresh-btn"
+          onclick="loadDashboard()">
+          Refresh
+        </button>
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+
+            <tbody id="usersTable">
+
+              <tr>
+                <td colspan="4">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </section>
+
+
+  <script>
+
+    /* SUPABASE */
+
+    const SUPABASE_URL =
+      "https://mlntauvkzwwdfzopiokg.supabase.co";
+
+    /*
+      અહીં તમારી નવી PUBLISHABLE KEY નાખો.
+      sb_publishable_ થી શરૂ થતી key વાપરો.
+    */
+
+    const SUPABASE_KEY =
+      "YOUR_NEW_PUBLISHABLE_KEY";
+
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    /* LOGIN */
+
+    async function login() {
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+      const message =
+        document.getElementById("loginMessage");
+
+
+      if (!email || !password) {
+
+        message.textContent =
+          "Email and password required.";
+
+        return;
+      }
+
+
+      message.textContent =
+        "Logging in...";
+
+
+      const result =
+        await supabaseClient.auth
+          .signInWithPassword({
+            email: email,
+            password: password
+          });
+
+
+      if (result.error) {
+
+        message.textContent =
+          result.error.message;
+
+        return;
+      }
+
+
+      /* ADMIN CHECK */
+
+      const adminResult =
+        await supabaseClient
+          .from("admins")
+          .select("role")
+          .eq("user_id", result.data.user.id)
+          .single();
+
+
+      if (adminResult.error || !adminResult.data) {
+
+        await supabaseClient.auth.signOut();
+
+        message.textContent =
+          "Access denied.";
+
+        return;
+      }
+
+
+      /* SHOW APP */
+
+      document
+        .getElementById("loginScreen")
+        .style.display = "none";
+
+      document
+        .getElementById("app")
+        .style.display = "block";
+
+
+      await loadDashboard();
     }
 
 
@@ -1427,7 +1905,7 @@ async function loadDashboard(){
 
     async function loadDashboard() {
 
-      const users =
+      const usersResult =
         await supabaseClient
           .from("users")
           .select("*", {
@@ -1436,7 +1914,7 @@ async function loadDashboard(){
           });
 
 
-      const wallets =
+      const walletsResult =
         await supabaseClient
           .from("wallets")
           .select("*", {
@@ -1445,7 +1923,7 @@ async function loadDashboard(){
           });
 
 
-      const transactions =
+      const transactionsResult =
         await supabaseClient
           .from("transactions")
           .select("*", {
@@ -1457,22 +1935,22 @@ async function loadDashboard(){
       document
         .getElementById("usersCount")
         .textContent =
-        users.count ?? 0;
+        usersResult.count ?? 0;
 
 
       document
         .getElementById("walletsCount")
         .textContent =
-        wallets.count ?? 0;
+        walletsResult.count ?? 0;
 
 
       document
         .getElementById("transactionsCount")
         .textContent =
-        transactions.count ?? 0;
+        transactionsResult.count ?? 0;
 
 
-      loadUsers();
+      await loadUsers();
     }
 
 
@@ -1480,10 +1958,12 @@ async function loadDashboard(){
 
     async function loadUsers() {
 
-      const { data, error } =
+      const result =
         await supabaseClient
           .from("users")
-          .select("name,phone,email,status")
+          .select(
+            "name,phone,email,status"
+          )
           .limit(100);
 
 
@@ -1491,7 +1971,7 @@ async function loadDashboard(){
         document.getElementById("usersTable");
 
 
-      if (error) {
+      if (result.error) {
 
         table.innerHTML =
           "<tr><td colspan='4'>Unable to load users.</td></tr>";
@@ -1500,7 +1980,7 @@ async function loadDashboard(){
       }
 
 
-      if (!data || data.length === 0) {
+      if (!result.data || result.data.length === 0) {
 
         table.innerHTML =
           "<tr><td colspan='4'>No users found.</td></tr>";
@@ -1510,18 +1990,35 @@ async function loadDashboard(){
 
 
       table.innerHTML =
-        data.map(function(user) {
+        result.data.map(function(user) {
 
           return `
             <tr>
-              <td>${user.name || "-"}</td>
-              <td>${user.phone || "-"}</td>
-              <td>${user.email || "-"}</td>
-              <td>${user.status || "-"}</td>
+              <td>${escapeHTML(user.name)}</td>
+              <td>${escapeHTML(user.phone)}</td>
+              <td>${escapeHTML(user.email)}</td>
+              <td>${escapeHTML(user.status)}</td>
             </tr>
           `;
 
         }).join("");
+    }
+
+
+    /* SAFE TEXT */
+
+    function escapeHTML(value) {
+
+      if (value === null || value === undefined) {
+        return "-";
+      }
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
 
@@ -1531,26 +2028,24 @@ async function loadDashboard(){
 
       await supabaseClient.auth.signOut();
 
+      document
+        .getElementById("app")
+        .style.display = "none";
 
       document
-        .getElementById("dashboardPage")
-        .style.display =
-        "none";
-
+        .getElementById("loginScreen")
+        .style.display = "flex";
 
       document
-        .getElementById("loginPage")
-        .style.display =
-        "flex";
-
+        .getElementById("email")
+        .value = "";
 
       document
         .getElementById("password")
         .value = "";
 
-
       document
-        .getElementById("message")
+        .getElementById("loginMessage")
         .textContent = "";
     }
 
