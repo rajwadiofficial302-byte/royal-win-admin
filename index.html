@@ -1,1 +1,1028 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>Royal Win Admin</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      min-height: 100%;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    button,
+    input {
+      font-family: inherit;
+    }
+
+    /* =========================
+       LOGIN SCREEN
+    ========================== */
+
+    #loginScreen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-card {
+      width: 100%;
+      max-width: 400px;
+      background: #ffffff;
+      padding: 30px;
+      border-radius: 18px;
+      box-shadow: 0 10px 35px rgba(0, 0, 0, 0.12);
+    }
+
+    .login-title {
+      text-align: center;
+      margin: 0;
+      font-size: 30px;
+    }
+
+    .login-subtitle {
+      text-align: center;
+      color: #6b7280;
+      margin: 8px 0 25px;
+    }
+
+    .input {
+      width: 100%;
+      padding: 14px;
+      margin-top: 12px;
+      border: 1px solid #d1d5db;
+      border-radius: 9px;
+      font-size: 16px;
+      outline: none;
+    }
+
+    .input:focus {
+      border-color: #111827;
+    }
+
+    .login-button {
+      width: 100%;
+      padding: 14px;
+      margin-top: 16px;
+      border: 0;
+      border-radius: 9px;
+      background: #111827;
+      color: #ffffff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    .login-button:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    #loginMessage {
+      text-align: center;
+      margin-top: 15px;
+      min-height: 20px;
+      font-size: 14px;
+    }
+
+    /* =========================
+       DASHBOARD
+    ========================== */
+
+    #dashboard {
+      display: none;
+      min-height: 100vh;
+    }
+
+    .topbar {
+      width: 100%;
+      background: #111827;
+      color: #ffffff;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .topbar-title {
+      margin: 0;
+      font-size: 22px;
+    }
+
+    .logout-button {
+      border: 0;
+      background: #dc2626;
+      color: #ffffff;
+      padding: 10px 17px;
+      border-radius: 8px;
+      font-size: 15px;
+      cursor: pointer;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 25px 20px;
+    }
+
+    .page-title {
+      margin: 0;
+      font-size: 28px;
+    }
+
+    .page-subtitle {
+      color: #6b7280;
+      margin: 7px 0 25px;
+    }
+
+    /* =========================
+       STATS
+    ========================== */
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .stat-card {
+      background: #ffffff;
+      border-radius: 15px;
+      padding: 22px;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.07);
+    }
+
+    .stat-label {
+      color: #6b7280;
+      font-size: 15px;
+    }
+
+    .stat-number {
+      font-size: 30px;
+      font-weight: bold;
+      margin-top: 8px;
+    }
+
+    .online {
+      color: #16a34a;
+    }
+
+    /* =========================
+       USERS
+    ========================== */
+
+    .panel {
+      background: #ffffff;
+      margin-top: 22px;
+      padding: 20px;
+      border-radius: 15px;
+      box-shadow: 0 5px 18px rgba(0, 0, 0, 0.07);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .panel-title {
+      margin: 0;
+      font-size: 21px;
+    }
+
+    .refresh-button {
+      border: 0;
+      background: #111827;
+      color: #ffffff;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    .table-container {
+      width: 100%;
+      overflow-x: auto;
+      margin-top: 15px;
+    }
+
+    table {
+      width: 100%;
+      min-width: 600px;
+      border-collapse: collapse;
+    }
+
+    th,
+    td {
+      text-align: left;
+      padding: 13px;
+      border-bottom: 1px solid #e5e7eb;
+    }
+
+    th {
+      background: #f9fafb;
+    }
+
+    .table-message {
+      text-align: center;
+      color: #6b7280;
+    }
+
+    /* =========================
+       MOBILE
+    ========================== */
+
+    @media (max-width: 800px) {
+      .stats {
+        grid-template-columns: repeat(2, 1fr);
+      }
+    }
+
+    @media (max-width: 500px) {
+      .topbar {
+        padding: 14px;
+      }
+
+      .topbar-title {
+        font-size: 18px;
+      }
+
+      .logout-button {
+        padding: 9px 13px;
+      }
+
+      .container {
+        padding: 18px 14px;
+      }
+
+      .page-title {
+        font-size: 24px;
+      }
+
+      .stats {
+        gap: 12px;
+      }
+
+      .stat-card {
+        padding: 18px 14px;
+      }
+
+      .stat-number {
+        font-size: 25px;
+      }
+
+      .panel {
+        padding: 15px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- =====================================================
+       LOGIN SCREEN
+  ====================================================== -->
+
+  <section id="loginScreen">
+
+    <div class="login-card">
+
+      <h1 class="login-title">
+        Royal Win Admin
+      </h1>
+
+      <p class="login-subtitle">
+        Administrator Login
+      </p>
+
+      <input
+        id="email"
+        class="input"
+        type="email"
+        placeholder="Admin Email"
+        autocomplete="email"
+      >
+
+      <input
+        id="password"
+        class="input"
+        type="password"
+        placeholder="Password"
+        autocomplete="current-password"
+      >
+
+      <button
+        id="loginButton"
+        class="login-button"
+        type="button"
+        onclick="login()"
+      >
+        Login
+      </button>
+
+      <div id="loginMessage"></div>
+
+    </div>
+
+  </section>
+
+
+  <!-- =====================================================
+       DASHBOARD
+  ====================================================== -->
+
+  <section id="dashboard">
+
+    <header class="topbar">
+
+      <h2 class="topbar-title">
+        Royal Win Admin
+      </h2>
+
+      <button
+        class="logout-button"
+        type="button"
+        onclick="logout()"
+      >
+        Logout
+      </button>
+
+    </header>
+
+
+    <main class="container">
+
+      <h1 class="page-title">
+        Dashboard
+      </h1>
+
+      <p class="page-subtitle">
+        Admin overview
+      </p>
+
+
+      <!-- STATS -->
+
+      <div class="stats">
+
+        <div class="stat-card">
+
+          <div class="stat-label">
+            Users
+          </div>
+
+          <div
+            id="usersCount"
+            class="stat-number"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-label">
+            Wallets
+          </div>
+
+          <div
+            id="walletsCount"
+            class="stat-number"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-label">
+            Transactions
+          </div>
+
+          <div
+            id="transactionsCount"
+            class="stat-number"
+          >
+            0
+          </div>
+
+        </div>
+
+
+        <div class="stat-card">
+
+          <div class="stat-label">
+            Status
+          </div>
+
+          <div class="stat-number online">
+            Online
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- USERS PANEL -->
+
+      <div class="panel">
+
+        <div class="panel-header">
+
+          <h2 class="panel-title">
+            Users
+          </h2>
+
+          <button
+            class="refresh-button"
+            type="button"
+            onclick="loadDashboard()"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <div class="table-container">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Name</th>
+                <th>Phone</th>
+                <th>Email</th>
+                <th>Status</th>
+              </tr>
+
+            </thead>
+
+
+            <tbody id="usersTable">
+
+              <tr>
+                <td
+                  colspan="4"
+                  class="table-message"
+                >
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </main>
+
+  </section>
+
+
+  <!-- =====================================================
+       JAVASCRIPT
+  ====================================================== -->
+
+  <script>
+
+    /* =====================================================
+       SUPABASE SETTINGS
+    ====================================================== */
+
+    const SUPABASE_URL =
+      "https://mlntauvkzwwdfzopiokg.supabase.co";
+
+
+    /*
+      IMPORTANT:
+
+      Replace only the value below with your NEW
+      Supabase PUBLISHABLE KEY.
+
+      Example:
+      "sb_publishable_xxxxxxxxxxxxx"
+
+      Do NOT put your secret/service_role key here.
+    */
+
+    const SUPABASE_KEY =
+      "YOUR_NEW_PUBLISHABLE_KEY";
+
+
+    const supabaseClient =
+      window.supabase.createClient(
+        SUPABASE_URL,
+        SUPABASE_KEY
+      );
+
+
+    /* =====================================================
+       ELEMENTS
+    ====================================================== */
+
+    const loginScreen =
+      document.getElementById("loginScreen");
+
+    const dashboard =
+      document.getElementById("dashboard");
+
+    const loginButton =
+      document.getElementById("loginButton");
+
+    const loginMessage =
+      document.getElementById("loginMessage");
+
+
+    /* =====================================================
+       SHOW LOGIN
+    ====================================================== */
+
+    function showLogin() {
+
+      dashboard.style.display = "none";
+
+      loginScreen.style.display = "flex";
+
+    }
+
+
+    /* =====================================================
+       SHOW DASHBOARD
+    ====================================================== */
+
+    function showDashboard() {
+
+      loginScreen.style.display = "none";
+
+      dashboard.style.display = "block";
+
+    }
+
+
+    /* =====================================================
+       LOGIN
+    ====================================================== */
+
+    async function login() {
+
+      const email =
+        document
+          .getElementById("email")
+          .value
+          .trim();
+
+      const password =
+        document
+          .getElementById("password")
+          .value;
+
+
+      loginMessage.textContent = "";
+
+
+      if (!email || !password) {
+
+        loginMessage.textContent =
+          "Please enter email and password.";
+
+        return;
+      }
+
+
+      loginButton.disabled = true;
+
+      loginButton.textContent =
+        "Logging in...";
+
+
+      try {
+
+        const result =
+          await supabaseClient.auth.signInWithPassword({
+            email: email,
+            password: password
+          });
+
+
+        if (result.error) {
+
+          loginMessage.textContent =
+            result.error.message;
+
+          return;
+        }
+
+
+        if (!result.data.user) {
+
+          loginMessage.textContent =
+            "Login failed.";
+
+          return;
+        }
+
+
+        /*
+          CHECK ADMIN TABLE
+        */
+
+        const adminResult =
+          await supabaseClient
+            .from("admins")
+            .select("role")
+            .eq("user_id", result.data.user.id)
+            .maybeSingle();
+
+
+        if (adminResult.error) {
+
+          await supabaseClient.auth.signOut();
+
+          loginMessage.textContent =
+            "Admin verification failed.";
+
+          return;
+        }
+
+
+        if (!adminResult.data) {
+
+          await supabaseClient.auth.signOut();
+
+          loginMessage.textContent =
+            "Access denied: Admin account required.";
+
+          return;
+        }
+
+
+        /*
+          LOGIN SUCCESS
+        */
+
+        showDashboard();
+
+        await loadDashboard();
+
+      } catch (error) {
+
+        loginMessage.textContent =
+          "Something went wrong. Please try again.";
+
+        console.error(error);
+
+      } finally {
+
+        loginButton.disabled = false;
+
+        loginButton.textContent =
+          "Login";
+      }
+    }
+
+
+    /* =====================================================
+       LOAD DASHBOARD
+    ====================================================== */
+
+    async function loadDashboard() {
+
+      await Promise.all([
+        loadUsersCount(),
+        loadWalletsCount(),
+        loadTransactionsCount(),
+        loadUsers()
+      ]);
+
+    }
+
+
+    /* =====================================================
+       USERS COUNT
+    ====================================================== */
+
+    async function loadUsersCount() {
+
+      const result =
+        await supabaseClient
+          .from("users")
+          .select("*", {
+            count: "exact",
+            head: true
+          });
+
+
+      if (result.error) {
+
+        document
+          .getElementById("usersCount")
+          .textContent = "0";
+
+        console.error(result.error);
+
+        return;
+      }
+
+
+      document
+        .getElementById("usersCount")
+        .textContent =
+        result.count ?? 0;
+    }
+
+
+    /* =====================================================
+       WALLETS COUNT
+    ====================================================== */
+
+    async function loadWalletsCount() {
+
+      const result =
+        await supabaseClient
+          .from("wallets")
+          .select("*", {
+            count: "exact",
+            head: true
+          });
+
+
+      if (result.error) {
+
+        document
+          .getElementById("walletsCount")
+          .textContent = "0";
+
+        console.error(result.error);
+
+        return;
+      }
+
+
+      document
+        .getElementById("walletsCount")
+        .textContent =
+        result.count ?? 0;
+    }
+
+
+    /* =====================================================
+       TRANSACTIONS COUNT
+    ====================================================== */
+
+    async function loadTransactionsCount() {
+
+      const result =
+        await supabaseClient
+          .from("transactions")
+          .select("*", {
+            count: "exact",
+            head: true
+          });
+
+
+      if (result.error) {
+
+        document
+          .getElementById("transactionsCount")
+          .textContent = "0";
+
+        console.error(result.error);
+
+        return;
+      }
+
+
+      document
+        .getElementById("transactionsCount")
+        .textContent =
+        result.count ?? 0;
+    }
+
+
+    /* =====================================================
+       LOAD USERS
+    ====================================================== */
+
+    async function loadUsers() {
+
+      const table =
+        document.getElementById("usersTable");
+
+
+      table.innerHTML =
+        "<tr><td colspan='4' class='table-message'>Loading...</td></tr>";
+
+
+      const result =
+        await supabaseClient
+          .from("users")
+          .select("name,phone,email,status")
+          .limit(100);
+
+
+      if (result.error) {
+
+        table.innerHTML =
+          "<tr><td colspan='4' class='table-message'>Unable to load users.</td></tr>";
+
+        console.error(result.error);
+
+        return;
+      }
+
+
+      if (
+        !result.data ||
+        result.data.length === 0
+      ) {
+
+        table.innerHTML =
+          "<tr><td colspan='4' class='table-message'>No users found.</td></tr>";
+
+        return;
+      }
+
+
+      table.innerHTML =
+        result.data
+          .map(function(user) {
+
+            return `
+              <tr>
+                <td>${safeText(user.name)}</td>
+                <td>${safeText(user.phone)}</td>
+                <td>${safeText(user.email)}</td>
+                <td>${safeText(user.status)}</td>
+              </tr>
+            `;
+
+          })
+          .join("");
+    }
+
+
+    /* =====================================================
+       SAFE TEXT
+    ====================================================== */
+
+    function safeText(value) {
+
+      if (
+        value === null ||
+        value === undefined ||
+        value === ""
+      ) {
+
+        return "-";
+      }
+
+
+      return String(value)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
+    }
+
+
+    /* =====================================================
+       LOGOUT
+    ====================================================== */
+
+    async function logout() {
+
+      await supabaseClient.auth.signOut();
+
+      document
+        .getElementById("email")
+        .value = "";
+
+      document
+        .getElementById("password")
+        .value = "";
+
+      loginMessage.textContent = "";
+
+      showLogin();
+
+    }
+
+
+    /* =====================================================
+       CHECK EXISTING SESSION
+    ====================================================== */
+
+    async function checkSession() {
+
+      try {
+
+        const result =
+          await supabaseClient.auth.getSession();
+
+
+        const session =
+          result.data.session;
+
+
+        if (!session || !session.user) {
+
+          showLogin();
+
+          return;
+        }
+
+
+        /*
+          VERIFY THAT LOGGED-IN USER IS ADMIN
+        */
+
+        const adminResult =
+          await supabaseClient
+            .from("admins")
+            .select("role")
+            .eq("user_id", session.user.id)
+            .maybeSingle();
+
+
+        if (
+          adminResult.error ||
+          !adminResult.data
+        ) {
+
+          await supabaseClient.auth.signOut();
+
+          showLogin();
+
+          return;
+        }
+
+
+        showDashboard();
+
+        await loadDashboard();
+
+      } catch (error) {
+
+        console.error(error);
+
+        showLogin();
+      }
+    }
+
+
+    /* =====================================================
+       AUTH STATE
+    ====================================================== */
+
+    supabaseClient.auth.onAuthStateChange(
+      function(event, session) {
+
+        if (
+          event === "SIGNED_OUT" ||
+          !session
+        ) {
+
+          showLogin();
+        }
+
+      }
+    );
+
+
+    /* =====================================================
+       START
+    ====================================================== */
+
+    checkSession();
+
+  </script>
+
+</body>
+  </html>
