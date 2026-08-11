@@ -3,42 +3,33 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
   <title>Royal Win Admin</title>
-
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
       font-family: Arial, sans-serif;
       background: #f3f4f6;
     }
 
-    .login {
+    .hidden { display: none !important; }
+
+    .login-box {
       width: 90%;
       max-width: 400px;
+      margin: 100px auto;
       padding: 30px;
       background: white;
       border-radius: 16px;
       box-shadow: 0 8px 30px rgba(0,0,0,.12);
     }
 
-    h1 {
-      text-align: center;
-      margin-bottom: 25px;
-    }
+    h1 { text-align: center; }
 
-    input,
-    button {
+    input, button {
       width: 100%;
       padding: 14px;
       margin-top: 12px;
@@ -46,15 +37,61 @@
       font-size: 16px;
     }
 
-    input {
-      border: 1px solid #ddd;
-    }
+    input { border: 1px solid #ddd; }
 
     button {
       border: 0;
       background: #111827;
       color: white;
-      cursor: pointer;
+    }
+
+    .dashboard {
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 18px;
+      background: #111827;
+      color: white;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h2 {
+      margin: 0;
+    }
+
+    .logout {
+      width: auto;
+      margin: 0;
+      padding: 9px 15px;
+      background: #dc2626;
+    }
+
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      padding: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 25px 15px;
+      border-radius: 12px;
+      text-align: center;
+      box-shadow: 0 3px 15px rgba(0,0,0,.08);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 22px;
+      font-weight: bold;
     }
 
     #message {
@@ -66,29 +103,61 @@
 
 <body>
 
-  <div class="login">
+  <!-- LOGIN -->
+  <div id="loginPage" class="login-box">
     <h1>Royal Win Admin</h1>
 
-    <input
-      id="email"
-      type="email"
-      placeholder="Admin Email"
-    >
-
-    <input
-      id="password"
-      type="password"
-      placeholder="Password"
-    >
+    <input id="email" type="email" placeholder="Admin Email">
+    <input id="password" type="password" placeholder="Password">
 
     <button onclick="login()">Login</button>
 
     <div id="message"></div>
   </div>
 
+
+  <!-- DASHBOARD -->
+  <div id="dashboardPage" class="dashboard hidden">
+
+    <header>
+      <h2>Royal Win Admin</h2>
+      <button class="logout" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="cards">
+
+      <div class="card">
+        <h3>Users</h3>
+        <p id="usersCount">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Wallets</h3>
+        <p id="walletsCount">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Transactions</h3>
+        <p id="transactionsCount">0</p>
+      </div>
+
+      <div class="card">
+        <h3>Status</h3>
+        <p>Online</p>
+      </div>
+
+    </div>
+
+  </div>
+
+
   <script>
-    const SUPABASE_URL = "https://mlntauvkzwwdfzopiokg.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_DyjDq2_UPlcKBV8_yCWT1Q_og7vhKD_";
+
+    const SUPABASE_URL =
+      "https://mlntauvkzwwdfzopiokg.supabase.co";
+
+    const SUPABASE_KEY =
+      "YOUR_NEW_PUBLISHABLE_KEY";
 
     const supabaseClient =
       window.supabase.createClient(
@@ -96,7 +165,9 @@
         SUPABASE_KEY
       );
 
+
     async function login() {
+
       const email =
         document.getElementById("email").value.trim();
 
@@ -116,8 +187,8 @@
 
       const { data, error } =
         await supabaseClient.auth.signInWithPassword({
-          email: email,
-          password: password
+          email,
+          password
         });
 
       if (error) {
@@ -133,17 +204,70 @@
           .single();
 
       if (adminError || !admin) {
+
         await supabaseClient.auth.signOut();
+
         message.textContent =
           "Access denied: Admin account required.";
+
         return;
       }
 
-      message.textContent =
-        "Login successful!";
+      document
+        .getElementById("loginPage")
+        .classList.add("hidden");
 
-      // Dashboard આગળના stepમાં બનાવશું.
+      document
+        .getElementById("dashboardPage")
+        .classList.remove("hidden");
+
+      loadDashboard();
     }
+
+
+    async function loadDashboard() {
+
+      const users =
+        await supabaseClient
+          .from("users")
+          .select("*", { count: "exact", head: true });
+
+      const wallets =
+        await supabaseClient
+          .from("wallets")
+          .select("*", { count: "exact", head: true });
+
+      const transactions =
+        await supabaseClient
+          .from("transactions")
+          .select("*", { count: "exact", head: true });
+
+      document.getElementById("usersCount").textContent =
+        users.count ?? 0;
+
+      document.getElementById("walletsCount").textContent =
+        wallets.count ?? 0;
+
+      document.getElementById("transactionsCount").textContent =
+        transactions.count ?? 0;
+    }
+
+
+    async function logout() {
+
+      await supabaseClient.auth.signOut();
+
+      document
+        .getElementById("dashboardPage")
+        .classList.add("hidden");
+
+      document
+        .getElementById("loginPage")
+        .classList.remove("hidden");
+
+      document.getElementById("password").value = "";
+    }
+
   </script>
 
 </body>
