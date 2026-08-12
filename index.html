@@ -898,7 +898,33 @@
           })
           .join("");
     }
+function searchUsers() {
 
+  const search =
+    document
+      .getElementById("userSearch")
+      .value
+      .toLowerCase()
+      .trim();
+
+  const rows =
+    document.querySelectorAll(
+      "#usersTable tr"
+    );
+
+  rows.forEach(function(row) {
+
+    const text =
+      row.textContent.toLowerCase();
+
+    if (text.includes(search)) {
+      row.style.display = "";
+    } else {
+      row.style.display = "none";
+    }
+
+  });
+    }
 
     /* =====================================================
        SAFE TEXT
