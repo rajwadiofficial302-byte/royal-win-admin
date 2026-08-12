@@ -878,7 +878,7 @@
     result.data.map(function(user) {
 
       return `
-        <tr style="cursor:pointer;">
+        <tr>
           <td>${safeText(user.name)}</td>
           <td>${safeText(user.phone)}</td>
           <td>${safeText(user.email)}</td>
@@ -887,27 +887,6 @@
       `;
 
     }).join("");
-
-  const rows =
-    table.querySelectorAll("tr");
-
-  rows.forEach(function(row, index) {
-
-    row.addEventListener("click", function() {
-
-      const user =
-        result.data[index];
-
-      showUserDetails(
-        user.name,
-        user.phone,
-        user.email,
-        user.status
-      );
-
-    });
-
-  });
     }
     /* =====================================================
        SAFE TEXT
