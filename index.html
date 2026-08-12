@@ -1,0 +1,754 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Game Admin Panel</title>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #f3f4f6;
+      color: #111827;
+    }
+
+    #loginPage {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .login-box {
+      width: 100%;
+      max-width: 400px;
+      background: white;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 8px 30px rgba(0,0,0,.12);
+    }
+
+    .login-box h1 {
+      text-align: center;
+      margin-top: 0;
+    }
+
+    input,
+    button {
+      width: 100%;
+      padding: 13px;
+      margin-top: 12px;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+
+    input {
+      border: 1px solid #d1d5db;
+    }
+
+    button {
+      border: 0;
+      background: #111827;
+      color: white;
+      cursor: pointer;
+    }
+
+    #loginMessage {
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    #adminPage {
+      display: none;
+      min-height: 100vh;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    header h2 {
+      margin: 0;
+    }
+
+    .logout {
+      width: auto;
+      margin: 0;
+      background: #dc2626;
+      padding: 9px 16px;
+    }
+
+    .container {
+      padding: 20px;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.08);
+    }
+
+    .card h3 {
+      margin: 0 0 8px;
+      font-size: 15px;
+      color: #6b7280;
+    }
+
+    .card p {
+      margin: 0;
+      font-size: 28px;
+      font-weight: bold;
+    }
+
+    .panel {
+      background: white;
+      border-radius: 14px;
+      padding: 20px;
+      box-shadow: 0 4px 15px rgba(0,0,0,.08);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+    }
+
+    .refresh {
+      width: auto;
+      margin: 0;
+      background: #2563eb;
+    }
+
+    #search {
+      margin-top: 15px;
+    }
+
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 15px;
+      min-width: 650px;
+    }
+
+    th,
+    td {
+      padding: 12px;
+      border-bottom: 1px solid #e5e7eb;
+      text-align: left;
+    }
+
+    th {
+      background: #f9fafb;
+    }
+
+    .locked {
+      color: #dc2626;
+      font-weight: bold;
+    }
+
+    .unlocked {
+      color: #16a34a;
+      font-weight: bold;
+    }
+
+    .action {
+      width: auto;
+      margin: 0;
+      padding: 8px 12px;
+      background: #2563eb;
+    }
+
+    .error {
+      color: #dc2626;
+      text-align: center;
+      padding: 15px;
+    }
+
+    @media (max-width: 600px) {
+
+      .stats {
+        grid-template-columns: 1fr 1fr;
+      }
+
+      .container {
+        padding: 12px;
+      }
+
+      .panel {
+        padding: 14px;
+      }
+
+      header {
+        padding: 14px;
+      }
+
+      header h2 {
+        font-size: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGIN -->
+
+  <div id="loginPage">
+
+    <div class="login-box">
+
+      <h1>Game Admin</h1>
+
+      <input
+        id="adminEmail"
+        type="email"
+        placeholder="Admin Email"
+      >
+
+      <input
+        id="adminPassword"
+        type="password"
+        placeholder="Password"
+      >
+
+      <button onclick="adminLogin()">
+        Login
+      </button>
+
+      <div id="loginMessage"></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ADMIN PAGE -->
+
+  <div id="adminPage">
+
+    <header>
+
+      <h2>Game Admin Panel</h2>
+
+      <button
+        class="logout"
+        onclick="logout()"
+      >
+        Logout
+      </button>
+
+    </header>
+
+
+    <div class="container">
+
+
+      <!-- STATS -->
+
+      <div class="stats">
+
+        <div class="card">
+          <h3>Total Users</h3>
+          <p id="totalUsers">0</p>
+        </div>
+
+        <div class="card">
+          <h3>Game Unlocked</h3>
+          <p id="unlockedUsers">0</p>
+        </div>
+
+      </div>
+
+
+      <!-- USERS -->
+
+      <div class="panel">
+
+        <div class="panel-header">
+
+          <h2>Users</h2>
+
+          <button
+            class="refresh"
+            onclick="loadUsers()"
+          >
+            Refresh
+          </button>
+
+        </div>
+
+
+        <input
+          id="search"
+          type="text"
+          placeholder="Search user email..."
+          oninput="searchUsers()"
+        >
+
+
+        <div class="table-wrap">
+
+          <table>
+
+            <thead>
+
+              <tr>
+                <th>Email</th>
+                <th>Game Access</th>
+                <th>Created</th>
+                <th>Action</th>
+              </tr>
+
+            </thead>
+
+            <tbody id="usersTable">
+
+              <tr>
+                <td colspan="4">
+                  Loading...
+                </td>
+              </tr>
+
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+<script>
+
+/* =====================================================
+   BACKEND URL
+===================================================== */
+
+const API_URL =
+  "https://YOUR-BACKEND-DOMAIN.com";
+
+
+/* =====================================================
+   ADMIN LOGIN
+===================================================== */
+
+function adminLogin() {
+
+  const email =
+    document
+      .getElementById("adminEmail")
+      .value
+      .trim();
+
+  const password =
+    document
+      .getElementById("adminPassword")
+      .value;
+
+  const message =
+    document.getElementById("loginMessage");
+
+
+  if (!email || !password) {
+
+    message.textContent =
+      "Enter email and password.";
+
+    return;
+  }
+
+
+  /*
+    Temporary frontend login.
+
+    Real admin authentication should be
+    handled by your backend.
+  */
+
+  if (
+    email === "admin@example.com" &&
+    password === "admin123"
+  ) {
+
+    localStorage.setItem(
+      "admin_logged_in",
+      "true"
+    );
+
+    showAdmin();
+
+  } else {
+
+    message.textContent =
+      "Invalid admin login.";
+
+  }
+}
+
+
+/* =====================================================
+   SHOW ADMIN
+===================================================== */
+
+function showAdmin() {
+
+  document
+    .getElementById("loginPage")
+    .style.display = "none";
+
+  document
+    .getElementById("adminPage")
+    .style.display = "block";
+
+  loadUsers();
+}
+
+
+/* =====================================================
+   LOAD USERS
+===================================================== */
+
+async function loadUsers() {
+
+  const table =
+    document.getElementById("usersTable");
+
+  table.innerHTML =
+    "<tr><td colspan='4'>Loading...</td></tr>";
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL + "/api/admin/users"
+      );
+
+
+    if (!response.ok) {
+      throw new Error(
+        "Unable to load users"
+      );
+    }
+
+
+    const data =
+      await response.json();
+
+
+    window.allUsers =
+      Array.isArray(data)
+        ? data
+        : [];
+
+
+    renderUsers(
+      window.allUsers
+    );
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    table.innerHTML =
+      "<tr><td colspan='4' class='error'>" +
+      "Backend not connected yet." +
+      "</td></tr>";
+
+  }
+
+}
+
+
+/* =====================================================
+   RENDER USERS
+===================================================== */
+
+function renderUsers(users) {
+
+  const table =
+    document.getElementById("usersTable");
+
+
+  document
+    .getElementById("totalUsers")
+    .textContent =
+    users.length;
+
+
+  document
+    .getElementById("unlockedUsers")
+    .textContent =
+    users.filter(
+      user => user.game_access === true
+    ).length;
+
+
+  if (users.length === 0) {
+
+    table.innerHTML =
+      "<tr><td colspan='4'>No users found.</td></tr>";
+
+    return;
+  }
+
+
+  table.innerHTML =
+    users.map(function(user) {
+
+      const access =
+        user.game_access === true;
+
+
+      return `
+
+        <tr>
+
+          <td>
+            ${safeText(user.email)}
+          </td>
+
+          <td class="${
+            access
+              ? "unlocked"
+              : "locked"
+          }">
+
+            ${
+              access
+                ? "Unlocked"
+                : "Locked"
+            }
+
+          </td>
+
+          <td>
+            ${
+              user.created_at
+                ? new Date(
+                    user.created_at
+                  ).toLocaleString()
+                : "-"
+            }
+          </td>
+
+          <td>
+
+            <button
+              class="action"
+              onclick="changeAccess(
+                '${safeText(user.id)}',
+                ${!access}
+              )"
+            >
+
+              ${
+                access
+                  ? "Lock Game"
+                  : "Unlock Game"
+              }
+
+            </button>
+
+          </td>
+
+        </tr>
+
+      `;
+
+    }).join("");
+
+}
+
+
+/* =====================================================
+   SEARCH
+===================================================== */
+
+function searchUsers() {
+
+  const search =
+    document
+      .getElementById("search")
+      .value
+      .toLowerCase()
+      .trim();
+
+
+  const filtered =
+    (window.allUsers || [])
+      .filter(function(user) {
+
+        return String(
+          user.email || ""
+        )
+        .toLowerCase()
+        .includes(search);
+
+      });
+
+
+  renderUsers(filtered);
+
+}
+
+
+/* =====================================================
+   CHANGE GAME ACCESS
+===================================================== */
+
+async function changeAccess(
+  userId,
+  access
+) {
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL +
+        "/api/admin/users/" +
+        encodeURIComponent(userId) +
+        "/access",
+        {
+
+          method: "PATCH",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            game_access: access
+          })
+
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "Access update failed"
+      );
+
+    }
+
+
+    await loadUsers();
+
+
+  } catch (error) {
+
+    console.error(error);
+
+    alert(
+      "Unable to update game access."
+    );
+
+  }
+
+}
+
+
+/* =====================================================
+   SAFE TEXT
+===================================================== */
+
+function safeText(value) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "-";
+  }
+
+
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+/* =====================================================
+   LOGOUT
+===================================================== */
+
+function logout() {
+
+  localStorage.removeItem(
+    "admin_logged_in"
+  );
+
+  document
+    .getElementById("adminPage")
+    .style.display = "none";
+
+  document
+    .getElementById("loginPage")
+    .style.display = "flex";
+
+  document
+    .getElementById("adminPassword")
+    .value = "";
+
+}
+
+
+/* =====================================================
+   AUTO LOGIN
+===================================================== */
+
+if (
+  localStorage.getItem(
+    "admin_logged_in"
+  ) === "true"
+) {
+
+  showAdmin();
+
+}
+
+</script>
+
+</body>
+            </html>
