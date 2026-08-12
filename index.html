@@ -844,106 +844,71 @@
 
     async function loadUsers() {
 
-      const table =
-        document.getElementById("usersTable");
+  const table =
+    document.getElementById("usersTable");
 
+  table.innerHTML =
+    "<tr><td colspan='4' class='table-message'>Loading...</td></tr>";
 
-      table.innerHTML =
-        "<tr><td colspan='4' class='table-message'>Loading...</td></tr>";
+  const result =
+    await supabaseClient
+      .from("users")
+      .select("name,phone,email,status")
+      .limit(100);
 
+  if (result.error) {
 
-      const result =
-        await supabaseClient
-          .from("users")
-          .select("name,phone,email,status")
-          .limit(100);
+    table.innerHTML =
+      "<tr><td colspan='4' class='table-message'>Unable to load users.</td></tr>";
 
+    console.error(result.error);
 
-      if (result.error) {
+    return;
+  }
 
-        table.innerHTML =
-          "<tr><td colspan='4' class='table-message'>Unable to load users.</td></tr>";
+  if (!result.data || result.data.length === 0) {
 
-        console.error(result.error);
+    table.innerHTML =
+      "<tr><td colspan='4' class='table-message'>No users found.</td></tr>";
 
-        return;
-      }
+    return;
+  }
 
+  table.innerHTML =
+    result.data.map(function(user) {
 
-      if (
-        !result.data ||
-        result.data.length === 0
-      ) {
+      return `
+        <tr style="cursor:pointer;">
+          <td>${safeText(user.name)}</td>
+          <td>${safeText(user.phone)}</td>
+          <td>${safeText(user.email)}</td>
+          <td>${safeText(user.status)}</td>
+        </tr>
+      `;
 
-        table.innerHTML =
-          "<tr><td colspan='4' class='table-message'>No users found.</td></tr>";
-
-        return;
-      }
-
-
-      table.innerHTML =
-        result.data
-          .map(function(user) {
-
-            return `
-  <tr
-    onclick="showUserDetails(
-      '${encodeURIComponent(user.name || "")}',
-      '${encodeURIComponent(user.phone || "")}',
-      '${encodeURIComponent(user.email || "")}',
-      '${encodeURIComponent(user.status || "")}'
-    )"
-    style="cursor:pointer;"
-  >
-    <td>${safeText(user.name)}</td>
-    <td>${safeText(user.phone)}</td>
-    <td>${safeText(user.email)}</td>
-    <td>${safeText(user.status)}</td>
-  </tr>
-`;
-
-          })
-          .join("");
-    }
-function searchUsers() {
-
-  const search =
-    document
-      .getElementById("userSearch")
-      .value
-      .toLowerCase()
-      .trim();
+    }).join("");
 
   const rows =
-    document.querySelectorAll(
-      "#usersTable tr"
-    );
+    table.querySelectorAll("tr");
 
-  rows.forEach(function(row) {
+  rows.forEach(function(row, index) {
 
-    const text =
-      row.textContent.toLowerCase();
+    row.addEventListener("click", function() {
 
-    if (text.includes(search)) {
-      row.style.display = "";
-    } else {
-      row.style.display = "none";
-    }
+      const user =
+        result.data[index];
+
+      showUserDetails(
+        user.name,
+        user.phone,
+        user.email,
+        user.status
+      );
+
+    });
 
   });
     }
-function showUserDetails(name, phone, email, status) {
-
-  alert(
-    "User Details\n\n" +
-    "Name: " + decodeURIComponent(name) + "\n" +
-    "Phone: " + decodeURIComponent(phone) + "\n" +
-    "Email: " + decodeURIComponent(email) + "\n" +
-    "Status: " + decodeURIComponent(status)
-  );
-
-}
     /* =====================================================
        SAFE TEXT
     ====================================================== */
