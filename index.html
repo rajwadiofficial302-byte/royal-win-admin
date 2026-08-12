@@ -887,13 +887,21 @@
           .map(function(user) {
 
             return `
-              <tr>
-                <td>${safeText(user.name)}</td>
-                <td>${safeText(user.phone)}</td>
-                <td>${safeText(user.email)}</td>
-                <td>${safeText(user.status)}</td>
-              </tr>
-            `;
+  <tr
+    onclick="showUserDetails(
+      '${encodeURIComponent(user.name || "")}',
+      '${encodeURIComponent(user.phone || "")}',
+      '${encodeURIComponent(user.email || "")}',
+      '${encodeURIComponent(user.status || "")}'
+    )"
+    style="cursor:pointer;"
+  >
+    <td>${safeText(user.name)}</td>
+    <td>${safeText(user.phone)}</td>
+    <td>${safeText(user.email)}</td>
+    <td>${safeText(user.status)}</td>
+  </tr>
+`;
 
           })
           .join("");
@@ -925,7 +933,17 @@ function searchUsers() {
 
   });
     }
+function showUserDetails(name, phone, email, status) {
 
+  alert(
+    "User Details\n\n" +
+    "Name: " + decodeURIComponent(name) + "\n" +
+    "Phone: " + decodeURIComponent(phone) + "\n" +
+    "Email: " + decodeURIComponent(email) + "\n" +
+    "Status: " + decodeURIComponent(status)
+  );
+
+}
     /* =====================================================
        SAFE TEXT
     ====================================================== */
